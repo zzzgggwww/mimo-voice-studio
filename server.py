@@ -6,7 +6,20 @@ import urllib.error
 import base64
 import os
 import sys
+from pathlib import Path
 from urllib.parse import parse_qs, urlparse
+
+def load_env_file():
+    env_file = Path(__file__).parent / ".env.local"
+    if env_file.exists():
+        with open(env_file) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, _, value = line.partition("=")
+                    os.environ.setdefault(key.strip(), value.strip())
+
+load_env_file()
 
 MIMO_API_KEY = os.environ.get("MIMO_API_KEY", "")
 MIMO_BASE_URL = os.environ.get("MIMO_BASE_URL", "https://token-plan-cn.xiaomimimo.com/v1")

@@ -26,6 +26,10 @@ MIMO_API_KEY=your-api-key-here
 MIMO_BASE_URL=https://token-plan-cn.xiaomimimo.com/v1
 ```
 
+**API Key 读取方式**：
+- **Python 版本** (`server.py`): 启动时自动加载同目录下的 `.env.local` 文件
+- **Next.js 版本**: Next.js 原生支持 `.env.local`
+
 > **注意**: `.env.local` 包含敏感信息，已被 `.gitignore` 排除，不会提交到 Git 仓库。
 
 ## 快速开始
