@@ -8,8 +8,8 @@ import os
 import sys
 from urllib.parse import parse_qs, urlparse
 
-MIMO_API_KEY = "tp-cys0wx3iyga3aheyaanh2cov9k27xjuwx9gqw8m9gh44sz9d"
-MIMO_BASE_URL = "https://token-plan-cn.xiaomimimo.com/v1"
+MIMO_API_KEY = os.environ.get("MIMO_API_KEY", "")
+MIMO_BASE_URL = os.environ.get("MIMO_BASE_URL", "https://token-plan-cn.xiaomimimo.com/v1")
 
 class VoiceAppHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
