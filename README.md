@@ -10,6 +10,24 @@
 - **声音设计**: 通过文字描述，生成定制音色
 - **风格控制**: 支持情绪、语速、方言等多种风格
 
+## 环境变量配置
+
+在运行项目前，需要创建 `.env.local` 文件并填入 API 密钥：
+
+```bash
+# 创建环境变量文件
+cp .env.example .env.local
+```
+
+编辑 `.env.local`，填入你的 MiMo API Key：
+
+```
+MIMO_API_KEY=your-api-key-here
+MIMO_BASE_URL=https://token-plan-cn.xiaomimimo.com/v1
+```
+
+> **注意**: `.env.local` 包含敏感信息，已被 `.gitignore` 排除，不会提交到 Git 仓库。
+
 ## 快速开始
 
 ### 启动服务器
