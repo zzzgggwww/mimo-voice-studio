@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配音工坊 - AI语音合成</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 16px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            resize: vertical;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #e0e0e0;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(56, 239, 125, 0.4);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .mode-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .mode-tab {
+            flex: 1;
+            padding: 14px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            background: white;
+        }
+
+        .mode-tab:hover {
+            border-color: #667eea;
+        }
+
+        .mode-tab.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .voice-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .voice-card {
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .voice-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .voice-card.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .voice-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .voice-info {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .upload-zone {
+            border: 2px dashed #ccc;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+
+        .upload-zone:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .upload-zone.has-file {
+            border-color: #38ef7d;
+            background: #f0fff4;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .upload-text {
+            color: #666;
+        }
+
+        .upload-hint {
+            font-size: 13px;
+            color: #999;
+            margin-top: 8px;
+        }
+
+        .result-section {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .result-section.show {
+            display: block;
+        }
+
+        audio {
+            width: 100%;
+            margin-bottom: 16px;
+            border-radius: 8px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .polish-result {
+            display: none;
+            margin-top: 16px;
+            padding: 16px;
+            background: #f0fff4;
+            border-radius: 12px;
+            border: 1px solid #38ef7d;
+        }
+
+        .polish-result.show {
+            display: block;
+        }
+
+        .polish-result h3 {
+            color: #11998e;
+            margin-bottom: 8px;
+        }
+
+        .polish-result p {
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .use-btn {
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: #11998e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .use-btn:hover {
+            background: #0e8a7f;
+        }
+
+        .style-hint {
+            font-size: 13px;
+            color: #999;
+            margin-top: 8px;
+        }
+
+        .footer {
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            margin-top: 30px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .mode-tabs {
+                flex-direction: column;
+            }
+
+            .voice-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .btn-row {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>配音工坊</h1>
+        <p class="subtitle">基于小米MiMo的AI配音应用</p>
+
+        <!-- Text Input Card -->
+        <div class="card">
+            <h2>📝 输入文案</h2>
+            <textarea id="inputText" placeholder="请输入要配音的文案...&#10;&#10;例如：欢迎来到配音工坊，这里有最自然的AI语音合成服务。"></textarea>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="handlePolish()" id="polishBtn">✨ AI润色</button>
+            </div>
+            <div class="polish-result" id="polishResult">
+                <h3>润色结果</h3>
+                <p id="polishedText"></p>
+                <button class="use-btn" onclick="usePolishedText()">使用此文案</button>
+            </div>
+        </div>
+
+        <!-- Mode Selection Card -->
+        <div class="card">
+            <h2>🎤 选择配音模式</h2>
+            <div class="mode-tabs">
+                <div class="mode-tab active" onclick="switchMode('preset')">预置音色</div>
+                <div class="mode-tab" onclick="switchMode('clone')">声音克隆</div>
+                <div class="mode-tab" onclick="switchMode('design')">声音设计</div>
+            </div>
+
+            <!-- Preset Voice Mode -->
+            <div id="presetSection">
+                <h3 style="margin-bottom: 12px; color: #555;">选择音色</h3>
+                <div class="voice-grid">
+                    <div class="voice-card selected" onclick="selectVoice(this, '冰糖')">
+                        <div class="voice-name">冰糖</div>
+                        <div class="voice-info">中文 · 女性</div>
+                    </div>
+                    <div class="voice-card" onclick="selectVoice(this, '茉莉')">
+                        <div class="voice-name">茉莉</div>
+                        <div class="voice-info">中文 · 女性</div>
+                    </div>
+                    <div class="voice-card" onclick="selectVoice(this, '苏打')">
+                        <div class="voice-name">苏打</div>
+                        <div class="voice-info">中文 · 男性</div>
+                    </div>
+                    <div class="voice-card" onclick="selectVoice(this, '白桦')">
+                        <div class="voice-name">白桦</div>
+                        <div class="voice-info">中文 · 男性</div>
+                    </div>
+                    <div class="voice-card" onclick="selectVoice(this, 'Mia')">
+                        <div class="voice-name">Mia</div>
+                        <div class="voice-info">英文 · 女性</div>
+                    </div>
+                    <div class="voice-card" onclick="selectVoice(this, 'Chloe')">
+                        <div class="voice-name">Chloe</div>
+                        <div class="voice-info">英文 · 女性</div>
+                    </div>
+                    <div class="voice-card" onclick="selectVoice(this, 'Milo')">
+                        <div class="voice-name">Milo</div>
+                        <div class="voice-info">英文 · 男性</div>
+                    </div>
+                    <div class="voice-card" onclick="selectVoice(this, 'Dean')">
+                        <div class="voice-name">Dean</div>
+                        <div class="voice-info">英文 · 男性</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clone Mode -->
+            <div id="cloneSection" style="display: none;">
+                <h3 style="margin-bottom: 12px; color: #555;">上传音频样本</h3>
+                <div class="upload-zone" onclick="document.getElementById('audioFile').click()">
+                    <input type="file" id="audioFile" accept="audio/mp3,audio/wav" style="display: none;" onchange="handleFileSelect(this)">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text" id="uploadText">点击上传音频文件</div>
+                    <div class="upload-hint">支持 MP3、WAV 格式，最大 10MB</div>
+                </div>
+            </div>
+
+            <!-- Design Mode -->
+            <div id="designSection" style="display: none;">
+                <h3 style="margin-bottom: 12px; color: #555;">描述音色</h3>
+                <textarea id="voiceDescription" placeholder="请描述你想要的音色...&#10;&#10;例如：年轻女性，温柔甜美，语速适中，像邻家小姐姐一样亲切"></textarea>
+                <p class="style-hint">描述越详细，生成的音色越符合预期</p>
+            </div>
+
+            <!-- Style Control -->
+            <div style="margin-top: 20px;">
+                <h3 style="margin-bottom: 8px; color: #555;">风格控制（可选）</h3>
+                <input type="text" id="styleInput" placeholder="例如：开心、悲伤、激动、东北话、粤语...">
+                <p class="style-hint">支持情绪、语速、方言、角色扮演等多种风格</p>
+            </div>
+        </div>
+
+        <!-- Generate Button -->
+        <div class="card">
+            <button class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 18px;" onclick="handleGenerate()" id="generateBtn">
+                🎵 生成配音
+            </button>
+
+            <!-- Loading -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>正在生成配音，请稍候...</p>
+            </div>
+
+            <!-- Result -->
+            <div class="result-section" id="resultSection">
+                <audio id="audioPlayer" controls></audio>
+                <button class="btn btn-success" style="width: 100%;" onclick="handleDownload()">
+                    ⬇️ 下载音频
+                </button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>基于小米MiMo TTS技术 | 配音工坊 v1.0</p>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'preset';
+        let currentVoice = '冰糖';
+        let currentAudioUrl = '';
+
+        function switchMode(mode) {
+            currentMode = mode;
+
+            document.querySelectorAll('.mode-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.getElementById('presetSection').style.display = mode === 'preset' ? 'block' : 'none';
+            document.getElementById('cloneSection').style.display = mode === 'clone' ? 'block' : 'none';
+            document.getElementById('designSection').style.display = mode === 'design' ? 'block' : 'none';
+        }
+
+        function selectVoice(element, voice) {
+            document.querySelectorAll('.voice-card').forEach(card => card.classList.remove('selected'));
+            element.classList.add('selected');
+            currentVoice = voice;
+        }
+
+        function handleFileSelect(input) {
+            const file = input.files[0];
+            if (file) {
+                document.getElementById('uploadText').textContent = file.name;
+                document.querySelector('.upload-zone').classList.add('has-file');
+            }
+        }
+
+        function usePolishedText() {
+            const polished = document.getElementById('polishedText').textContent;
+            document.getElementById('inputText').value = polished;
+            document.getElementById('polishResult').classList.remove('show');
+        }
+
+        async function handlePolish() {
+            const text = document.getElementById('inputText').value.trim();
+            if (!text) {
+                alert('请先输入文案');
+                return;
+            }
+
+            const btn = document.getElementById('polishBtn');
+            btn.disabled = true;
+            btn.textContent = '润色中...';
+
+            try {
+                const response = await fetch('/api/polish', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+
+                const data = await response.json();
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    document.getElementById('polishedText').textContent = data.text;
+                    document.getElementById('polishResult').classList.add('show');
+                }
+            } catch (error) {
+                alert('润色失败: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '✨ AI润色';
+            }
+        }
+
+        async function handleGenerate() {
+            const text = document.getElementById('inputText').value.trim();
+            if (!text) {
+                alert('请先输入文案');
+                return;
+            }
+
+            const btn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('resultSection');
+
+            btn.disabled = true;
+            loading.classList.add('show');
+            result.classList.remove('show');
+
+            try {
+                let response;
+
+                if (currentMode === 'preset') {
+                    const style = document.getElementById('styleInput').value;
+                    response = await fetch('/api/tts', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text, voice: currentVoice, style })
+                    });
+                } else if (currentMode === 'clone') {
+                    const fileInput = document.getElementById('audioFile');
+                    if (!fileInput.files[0]) {
+                        alert('请上传音频文件');
+                        return;
+                    }
+
+                    const formData = new FormData();
+                    formData.append('audio', fileInput.files[0]);
+                    formData.append('text', text);
+                    const style = document.getElementById('styleInput').value;
+                    if (style) formData.append('style', style);
+
+                    response = await fetch('/api/clone', {
+                        method: 'POST',
+                        body: formData
+                    });
+                } else {
+                    const voiceDesc = document.getElementById('voiceDescription').value.trim();
+                    if (!voiceDesc) {
+                        alert('请描述音色');
+                        return;
+                    }
+
+                    response = await fetch('/api/design', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ voiceDescription: voiceDesc, text })
+                    });
+                }
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    alert(data.error || '生成失败');
+                    return;
+                }
+
+                const blob = await response.blob();
+                currentAudioUrl = URL.createObjectURL(blob);
+                document.getElementById('audioPlayer').src = currentAudioUrl;
+                result.classList.add('show');
+            } catch (error) {
+                alert('生成失败: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                loading.classList.remove('show');
+            }
+        }
+
+        function handleDownload() {
+            if (!currentAudioUrl) return;
+            const a = document.createElement('a');
+            a.href = currentAudioUrl;
+            a.download = '配音.wav';
+            a.click();
+        }
+    </script>
+</body>
+</html>
